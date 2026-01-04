@@ -178,9 +178,7 @@ export function useContractHook() {
         }
     };
 
-    const registerAsPatient = async (
-        setIsRegistered: React.Dispatch<React.SetStateAction<boolean>>
-    ) => {
+    const registerAsPatient = async () => {
         if (!instance || !userAddress) {
             toast.error("Contract not ready");
             return;
@@ -203,7 +201,6 @@ export function useContractHook() {
 
             if (currentRole === BigInt(1)) {
                 toast.info("Already registered as PATIENT");
-                setIsRegistered(true);
                 localStorage.setItem("role", "patient");
                 return;
             }
@@ -216,7 +213,6 @@ export function useContractHook() {
             const receipt = await tx.wait();
 
             if (receipt.status === 1) {
-                setIsRegistered(true);
                 localStorage.setItem("role", "patient");
                 toast.success("Successfully registered as Patient!");
             } else {

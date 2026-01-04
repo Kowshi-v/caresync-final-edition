@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Heart, Shield, User, Stethoscope, FileText, Lock, Users, Eye, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,8 +7,11 @@ import { FaFacebook, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { SetDoctorDialog } from '@/components/dialog/setDoctorDialog';
+import { useContractHook } from '@/hooks/useContractHook';
 
 export default function CareSync() {
+  const { registerAsPatient } = useContractHook();
+
   return (
     <div className="min-h-screen bg-linear-to-b from-red-50 to-white">
       <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b">
@@ -63,7 +68,7 @@ export default function CareSync() {
                 <Users className="w-5 h-5 text-red-500 mt-1 shrink-0" />
                 <p className="text-gray-700">Grant access to specific doctors</p>
               </div>
-              <Button className="flex items-center gap-3 w-full bg-red-600 hover:bg-red-700 text-white mt-6">
+              <Button className="flex items-center gap-3 w-full bg-red-600 hover:bg-red-700 text-white mt-6" onClick={registerAsPatient}>
                 <span>Continue as Patient</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>

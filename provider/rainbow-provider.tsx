@@ -3,13 +3,13 @@
 import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { sonicBlazeTestnet } from "wagmi/chains";
+import { sonicTestnet } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 const config = getDefaultConfig({
     appName: "Care Sync",
     projectId: "rainbowkit-test-project",
-    chains: [sonicBlazeTestnet],
+    chains: [sonicTestnet],
     ssr: false,
 });
 
