@@ -88,7 +88,7 @@ export function SetDoctorDialog() {
                         <Button className="bg-red-500 hover:bg-red-600" disabled={isRegistered} onClick={() => {
                             registerAsDoctor(setIsRegistered)
                         }}>Register As Doctor</Button>
-                        <Button disabled={!isRegistered} className="bg-red-500 hover:bg-red-600" onClick={() => {
+                        <Button className="bg-red-500 hover:bg-red-600" onClick={() => {
                             setDoctorProfile(isRegistered, formData.name, formData.qualification, formData.specialization, formData.experience)
                         }}>set Profile</Button>
                     </DialogFooter>

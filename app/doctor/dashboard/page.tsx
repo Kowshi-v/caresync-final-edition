@@ -9,9 +9,12 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 import { useContractHook } from '@/hooks/useContractHook';
 import { DoctorProfile as docp } from '@/types/doctor';
+import { MedicalReport } from '@/types/patient';
+
+import { MdOutlineDocumentScanner } from "react-icons/md";
 
 export default function DoctorDashboard() {
-    const { getDoctorProfile, instance, userAddress } = useContractHook();
+    const { getDoctorProfile, instance, userAddress, getDoctorReports } = useContractHook();
     const [data, setData] = useState<docp>({
         experience: 0,
         name: "",
@@ -19,6 +22,7 @@ export default function DoctorDashboard() {
         specialization: "",
         verified: false,
     })
+    const [assignedReport, setAssignedReport] = useState<MedicalReport[]>([]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -33,6 +37,23 @@ export default function DoctorDashboard() {
                         specialization: res.specialization,
                         verified: res.verified,
                     });
+                } else {
+                    console.log("No profile set yet");
+                }
+            }
+        }
+
+        fetchProfile();
+    }, [instance, userAddress, getDoctorProfile]);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (instance && userAddress) {
+                const res = await getDoctorReports();
+
+                if (res) {
+                    setAssignedReport(res)
+                    console.log(res)
                 } else {
                     console.log("No profile set yet");
                 }
@@ -72,15 +93,54 @@ export default function DoctorDashboard() {
                                 <CardDescription>Records you have been authorized to view</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
-                                    <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                                        <Lock className="w-12 h-12 text-gray-400" />
+                                {assignedReport.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                                        <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                            <Lock className="w-12 h-12 text-gray-400" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                                            No records available
+                                        </h3>
+                                        <p className="text-gray-500">
+                                            Patients must grant you permission to view their records.
+                                        </p>
                                     </div>
-                                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No records available</h3>
-                                    <p className="text-gray-500">
-                                        Patients must grant you permission to view their records.
-                                    </p>
-                                </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {assignedReport.map((report) => (
+                                            <div
+                                                key={report.id}
+                                                className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50/40 px-6 py-4"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <div className="mt-1 text-red-600">
+                                                        <MdOutlineDocumentScanner className="h-4 w-5" />
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="font-semibold text-gray-800">
+                                                            {report.meta || `Medical Report #${report.id}`}
+                                                        </p>
+
+                                                        <p className="text-sm text-gray-500">
+                                                            Patient: {report.patient.slice(0, 6)}...
+                                                            {report.patient.slice(-4)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={() =>
+                                                        window.open(`https://ipfs.io/ipfs/${report.cid}`, "_blank")
+                                                    }
+                                                    className="rounded-lg border border-red-400 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 transition"
+                                                >
+                                                    View Record
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>

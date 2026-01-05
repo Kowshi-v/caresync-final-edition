@@ -158,7 +158,6 @@ export function useContractHook() {
                 setIsRegistered(true);
                 localStorage.setItem("role", "doctor");
                 toast.success("Successfully registered as Doctor!");
-                globalThis.window.location.reload();
             } else {
                 toast.error("Transaction failed");
             }
@@ -167,46 +166,42 @@ export function useContractHook() {
         }
     };
 
+    let isRegistering = false;
+
     const registerAsPatient = async () => {
-        if (!instance || !userAddress) {
-            console.error("contract not init")
-            return;
-        }
+        if (!instance || !userAddress || isRegistering) return;
+        isRegistering = true;
 
         try {
             const contract = await ensureCorrectNetwork();
-            if (!contract) {
-                toast.error("Failed to connect to correct network");
-                return;
-            }
+            if (!contract) return;
 
             const currentRole = await contract.roles(userAddress);
+
+            if (currentRole === BigInt(1)) {
+                toast.info("Already registered as PATIENT");
+                return;
+            }
 
             if (currentRole === BigInt(2)) {
                 toast.error("Already registered as DOCTOR");
                 return;
             }
 
-            if (currentRole === BigInt(1)) {
-                toast.info("Already registered as PATIENT");
-                localStorage.setItem("role", "patient");
-                return;
-            }
-
             toast.info("Sending transaction...");
-            const tx = await contract.registerAsPatient({ gasLimit: 1_000_000 });
-            toast.info("Waiting for confirmation...");
+            const tx = await contract.registerAsPatient({
+                gasLimit: 1_000_000,
+            });
+
             const receipt = await tx.wait();
 
-            if (receipt.status === 1) {
-                localStorage.setItem("role", "patient");
+            if (receipt?.status === 1) {
                 toast.success("Successfully registered as Patient!");
-                globalThis.window.location.reload();
-            } else {
-                toast.error("Transaction failed");
             }
-        } catch (e: any) {
-            console.error(e);
+        } catch (err) {
+            console.error("TX ERROR:", err);
+        } finally {
+            isRegistering = false;
         }
     };
 
@@ -217,8 +212,8 @@ export function useContractHook() {
         specialization: string,
         experience: number
     ) => {
-        if (!instance || !isRegistered) {
-            toast.error("Not ready or not registered as doctor");
+        if (!instance) {
+            toast.error("Not ready");
             return;
         }
 
@@ -247,6 +242,7 @@ export function useContractHook() {
 
             if (receipt.status === 1) {
                 toast.success("Profile updated successfully!");
+                globalThis.window.location.reload();
             } else {
                 toast.error("Transaction failed");
             }
@@ -425,6 +421,36 @@ export function useContractHook() {
         return res ? res.name : "Unknown Doctor";
     }
 
+    const getDoctorReports = async () => {
+        if (!instance || !userAddress) return [];
+
+        try {
+            const res = await instance.getAssignedReports();
+
+            const ids: bigint[] = Array.from(res);
+
+            const reports = await Promise.all(
+                ids.map(async (id: bigint) => {
+                    const r = await instance.getReport(id);
+                    return {
+                        id: r[0].toString(),
+                        patient: r[1],
+                        doctor: r[2],
+                        cid: r[3],
+                        meta: r[4],
+                        timestamp: Number(r[5]),
+                    };
+                })
+            );
+
+            return reports;
+        } catch {
+            toast.error("Get assigned reports failed");
+            return [];
+        }
+    };
+
+
     const checkUserRole = async () => {
         if (!instance || !userAddress) return null;
 
@@ -460,6 +486,7 @@ export function useContractHook() {
         getVerifiedDoctors,
         getAllDoctors,
         assignDoctor,
-        getDoctorName
+        getDoctorName,
+        getDoctorReports
     };
 }
