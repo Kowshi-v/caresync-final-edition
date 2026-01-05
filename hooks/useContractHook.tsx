@@ -66,7 +66,6 @@ export function useContractHook() {
                     toast.error("Please connect your wallet");
                 } else {
                     console.info("Account changed, reloading...");
-                    window.location.reload();
                 }
             };
 
@@ -75,7 +74,6 @@ export function useContractHook() {
                 if (chainId !== TARGET_CHAIN_ID) {
                     toast.error("Please switch back to Sonic Testnet");
                 }
-                window.location.reload();
             };
 
             globalThis.window.ethereum.on("accountsChanged", handleAccountsChanged);
@@ -125,7 +123,7 @@ export function useContractHook() {
         setIsRegistered: React.Dispatch<React.SetStateAction<boolean>>
     ) => {
         if (!instance || !userAddress) {
-            toast.error("Contract not ready");
+            console.error("Contract not ready");
             return;
         }
 
@@ -137,8 +135,6 @@ export function useContractHook() {
             }
 
             const currentRole = await contract.roles(userAddress);
-            console.info("Current role:", currentRole.toString());
-
             if (currentRole === BigInt(1)) {
                 toast.error("Already registered as PATIENT");
                 return;
@@ -162,25 +158,18 @@ export function useContractHook() {
                 setIsRegistered(true);
                 localStorage.setItem("role", "doctor");
                 toast.success("Successfully registered as Doctor!");
+                globalThis.window.location.reload();
             } else {
                 toast.error("Transaction failed");
             }
         } catch (e: any) {
-            console.error("Registration error:", e);
-
-            if (e.code === "NETWORK_ERROR") {
-                toast.error("Network changed during transaction. Please try again.");
-            } else if (e.message?.includes("Already registered")) {
-                toast.error("Already registered");
-            } else {
-                toast.error(e?.reason || e?.message || "Registration failed");
-            }
+            console.error(e);
         }
     };
 
     const registerAsPatient = async () => {
         if (!instance || !userAddress) {
-            toast.error("Contract not ready");
+            console.error("contract not init")
             return;
         }
 
@@ -192,7 +181,6 @@ export function useContractHook() {
             }
 
             const currentRole = await contract.roles(userAddress);
-            console.info("Current role:", currentRole.toString());
 
             if (currentRole === BigInt(2)) {
                 toast.error("Already registered as DOCTOR");
@@ -207,27 +195,18 @@ export function useContractHook() {
 
             toast.info("Sending transaction...");
             const tx = await contract.registerAsPatient({ gasLimit: 1_000_000 });
-            console.info("Transaction hash:", tx.hash);
-
             toast.info("Waiting for confirmation...");
             const receipt = await tx.wait();
 
             if (receipt.status === 1) {
                 localStorage.setItem("role", "patient");
                 toast.success("Successfully registered as Patient!");
+                globalThis.window.location.reload();
             } else {
                 toast.error("Transaction failed");
             }
         } catch (e: any) {
-            console.error("Registration error:", e);
-
-            if (e.code === "NETWORK_ERROR") {
-                toast.error("Network changed during transaction. Please try again.");
-            } else if (e.message?.includes("Already registered")) {
-                toast.error("Already registered");
-            } else {
-                toast.error(e?.reason || e?.message || "Registration failed");
-            }
+            console.error(e);
         }
     };
 
@@ -292,13 +271,6 @@ export function useContractHook() {
 
         try {
             const profile = await instance.getDoctorProfile(address);
-            console.log("Profile found:", {
-                name: profile.name,
-                qualification: profile.qualification,
-                specialization: profile.specialization,
-                experience: profile.experience.toString(),
-                verified: profile.verified
-            });
 
             return {
                 name: profile.name,
@@ -327,6 +299,7 @@ export function useContractHook() {
             const receipt = await tx.wait();
 
             toast.success("Report uploaded");
+            globalThis.window.location.reload();
             return receipt;
         } catch (err: any) {
             console.error(err);
@@ -354,6 +327,8 @@ export function useContractHook() {
             })
         );
 
+        console.log("Fetched reports:", reports);
+
         return reports;
     };
 
@@ -369,7 +344,7 @@ export function useContractHook() {
             });
             await tx.wait();
             toast.success("Doctor verified");
-            return tx;
+            globalThis.window.location.reload();
         } catch (err: any) {
             console.error(err);
             toast.error(err?.reason || "Verify doctor failed");
@@ -390,6 +365,7 @@ export function useContractHook() {
             await tx.wait();
 
             toast.success("Doctor revoked");
+            globalThis.window.location.reload();
         } catch (e: any) {
             console.error(e);
             toast.error(e?.reason || "Revoke doctor failed");
@@ -401,15 +377,52 @@ export function useContractHook() {
         if (!instance || !userAddress) return [];
 
         try {
-            const tx = await instance.getVerifiedDoctors();
-            await tx.wait();
-
-            toast.success("Fetched verified doctors");
-            return tx;
+            const res = await instance.getVerifiedDoctors();
+            return res;
         } catch (e: any) {
             toast.error(e?.reason || "Get verified doctors failed");
             return [];
         }
+    }
+
+    const getAllDoctors = async () => {
+        if (!instance) return [];
+
+        try {
+            const res = await instance.getAllDoctors();
+            return res;
+        } catch (e: any) {
+            console.error(e);
+            toast.error(e?.reason || "Get all doctors failed");
+            return [];
+        }
+    };
+
+    const assignDoctor = async (reportId: number, doctorAddress: string) => {
+        if (!instance || !userAddress) return null;
+
+        try {
+            const tx = await instance.assignDoctor(
+                reportId,
+                doctorAddress,
+                {
+                    gasLimit: 1_000_000
+                }
+            );
+            await tx.wait();
+
+            toast.success("doctor assigned successfully !!!")
+            globalThis.window.location.reload();
+        } catch (e: any) {
+            console.error(e);
+            toast.error(e?.reason || "Assign doctor failed");
+            return null;
+        }
+    }
+
+    const getDoctorName = async (address: string) => {
+        const res = await getDoctorProfile(address);
+        return res ? res.name : "Unknown Doctor";
     }
 
     const checkUserRole = async () => {
@@ -444,6 +457,9 @@ export function useContractHook() {
         getMyReports,
         verifyDoctor,
         revokeDoctor,
-        getVerifiedDoctors
+        getVerifiedDoctors,
+        getAllDoctors,
+        assignDoctor,
+        getDoctorName
     };
 }

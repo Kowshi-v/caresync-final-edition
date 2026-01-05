@@ -5,3 +5,7 @@ export interface DoctorProfile {
     specialization: string;
     verified: boolean;
 }
+
+export interface DoctorProfileWithWallet extends DoctorProfile {
+    wallet: string;
+}

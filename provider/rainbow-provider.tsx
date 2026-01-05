@@ -8,7 +8,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 const config = getDefaultConfig({
     appName: "Care Sync",
-    projectId: "rainbowkit-test-project",
+    projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
     chains: [sonicTestnet],
     ssr: false,
 });

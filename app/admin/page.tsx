@@ -3,53 +3,57 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ShieldCheck, ShieldOff } from "lucide-react"
-
-type Doctor = {
-    id: string
-    name: string
-    email: string
-    specialization: string
-    license: string
-}
-
-const verifiedDoctors: Doctor[] = [
-    {
-        id: "1",
-        name: "Dr. CDS",
-        email: "csa@gmail.com",
-        specialization: "Dermatology",
-        license: "LIC-2345",
-    },
-    {
-        id: "2",
-        name: "Dr. Kumar",
-        email: "kumar@gmail.com",
-        specialization: "Cardiology",
-        license: "LIC-9898",
-    },
-]
-
-const unverifiedDoctors: Doctor[] = [
-    {
-        id: "3",
-        name: "Dr. Alex",
-        email: "alex@gmail.com",
-        specialization: "Neurology",
-        license: "LIC-1122",
-    },
-]
+import { Button } from "@/components/ui/button"
+import { ArrowLeft, ShieldCheck, ShieldOff, ShieldX } from "lucide-react"
+import { useContractHook } from "@/hooks/useContractHook"
+import { useEffect, useState } from "react"
+import { DoctorProfileWithWallet } from "@/types/doctor"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { useRouter } from "next/navigation"
 
 export default function DoctorsPage() {
+    const { getAllDoctors, getDoctorProfile, instance } = useContractHook();
+    const [profiles, setProfiles] = useState<DoctorProfileWithWallet[]>([]);
+
+    useEffect(() => {
+        if (!instance) return;
+
+        const loadDoctors = async () => {
+            const addresses = await getAllDoctors();
+
+            const profilesData = await Promise.all(
+                addresses.map(async (addr: string) => {
+                    const profile = await getDoctorProfile(addr);
+                    return {
+                        ...profile,
+                        wallet: addr,
+                    };
+                })
+            );
+
+            setProfiles(profilesData);
+        };
+
+        loadDoctors();
+    }, [instance]);
+
+    const verified = profiles.filter(p => p.verified);
+    const unverified = profiles.filter(p => !p.verified);
+
+    const router = useRouter();
+
     return (
         <div className="min-h-screen bg-muted/30 p-6">
             <div className="mx-auto max-w-7xl">
-                <h1 className="mb-6 text-3xl font-bold">
-                    Doctors Directory
-                </h1>
+                <div className="flex justify-between items-center">
+                    <h1 className="mb-6 text-3xl font-bold text-red-500 flex items-center gap-2">
+                        <ArrowLeft className="h-6 w-6" onClick={() => router.back()} />
+                        Doctors Directory
+                    </h1>
+                    <ConnectButton />
+                </div>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {/* VERIFIED DOCTORS */}
                     <section>
                         <div className="mb-4 flex items-center gap-2">
                             <ShieldCheck className="h-5 w-5 text-green-600" />
@@ -59,9 +63,9 @@ export default function DoctorsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            {verifiedDoctors.map((doctor) => (
+                            {verified.map((doctor) => (
                                 <DoctorCard
-                                    key={doctor.id}
+                                    key={doctor.wallet}
                                     doctor={doctor}
                                     verified
                                 />
@@ -69,7 +73,6 @@ export default function DoctorsPage() {
                         </div>
                     </section>
 
-                    {/* UNVERIFIED DOCTORS */}
                     <section>
                         <div className="mb-4 flex items-center gap-2">
                             <ShieldOff className="h-5 w-5 text-red-600" />
@@ -79,9 +82,9 @@ export default function DoctorsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            {unverifiedDoctors.map((doctor) => (
+                            {unverified.map((doctor) => (
                                 <DoctorCard
-                                    key={doctor.id}
+                                    key={doctor.wallet}
                                     doctor={doctor}
                                     verified={false}
                                 />
@@ -91,16 +94,18 @@ export default function DoctorsPage() {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 function DoctorCard({
     doctor,
     verified,
 }: {
-    doctor: Doctor
-    verified: boolean
+    readonly doctor: DoctorProfileWithWallet,
+    readonly verified: boolean
 }) {
+    const { verifyDoctor, revokeDoctor } = useContractHook();
+
     return (
         <Card>
             <CardHeader>
@@ -108,14 +113,27 @@ function DoctorCard({
                     <CardTitle className="text-lg">
                         {doctor.name}
                     </CardTitle>
-                    <Badge variant={verified ? "default" : "destructive"}>
-                        {verified ? "Verified" : "Unverified"}
-                    </Badge>
+                    {
+                        verified ? (
+                            <Button className="bg-red-500 hover:bg-red-600 flex items-center gap-2"
+                                onClick={
+                                    () => revokeDoctor(doctor.wallet)
+                                }>
+                                Revoke <ShieldX className="h-4 w-4" />
+                            </Button>
+                        ) : (
+                            <Button className="bg-red-500 hover:bg-red-600 flex items-center gap-2" onClick={
+                                () => verifyDoctor(doctor.wallet)
+                            }>
+                                verify <ShieldCheck className="h-4 w-4" />
+                            </Button>
+                        )
+                    }
                 </div>
             </CardHeader>
 
             <CardContent className="space-y-2 text-sm">
-                <p className="text-muted-foreground">{doctor.email}</p>
+                <p className="text-muted-foreground">Experience: {doctor.experience}</p>
 
                 <Separator />
 
@@ -124,10 +142,10 @@ function DoctorCard({
                         {doctor.specialization}
                     </Badge>
                     <Badge variant="outline">
-                        License: {doctor.license}
+                        Qualification: {doctor.qualification}
                     </Badge>
                 </div>
             </CardContent>
-        </Card>
+        </Card >
     )
 }
