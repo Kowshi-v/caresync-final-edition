@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { SetDoctorDialog } from '@/components/dialog/setDoctorDialog';
 import { useContractHook } from '@/hooks/useContractHook';
+import Link from 'next/link';
 
 export default function CareSync() {
   const { registerAsPatient } = useContractHook();
@@ -25,9 +26,10 @@ export default function CareSync() {
           </div>
           <nav className="hidden md:flex gap-8">
             <ConnectButton />
-            <a href="#features" className="text-gray-700 hover:text-red-600 transition">Features</a>
-            <a href="#how-it-works" className="text-gray-700 hover:text-red-600 transition">How It Works</a>
-            <a href="#contact" className="text-gray-700 hover:text-red-600 transition">Contact</a>
+            <Link href="" className="text-gray-700 hover:text-red-600 transition">Admin</Link>
+            <Link href="#features" className="text-gray-700 hover:text-red-600 transition">Features</Link>
+            <Link href="#how-it-works" className="text-gray-700 hover:text-red-600 transition">How It Works</Link>
+            <Link href="#contact" className="text-gray-700 hover:text-red-600 transition">Contact</Link>
           </nav>
         </div>
       </header>

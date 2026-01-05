@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { BadgeCheck, Stethoscope } from 'lucide-react';
 import { Label } from '../ui/label';
-import { useContractHook } from '@/hooks/useContractHook';
-import { DoctorProfile as docp } from '@/types/doctor';
 
 const DoctorProfile = ({ name, experience, qualification, specialization, verified }: { name: string, experience: number, qualification: string, specialization: string, verified: boolean }) => {
     return (

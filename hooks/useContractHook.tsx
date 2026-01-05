@@ -313,6 +313,105 @@ export function useContractHook() {
         }
     };
 
+    //assume meta as description
+    const uploadReport = async (cid: string, meta: string) => {
+        if (!instance || !userAddress) {
+            toast.error("Contract not ready");
+            return null;
+        }
+
+        try {
+            const tx = await instance.uploadReport(cid, meta, {
+                gasLimit: 1_000_000
+            });
+            const receipt = await tx.wait();
+
+            toast.success("Report uploaded");
+            return receipt;
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err?.reason || "Upload report failed");
+            return null;
+        }
+    };
+
+    const getMyReports = async () => {
+        if (!instance || !userAddress) return [];
+
+        const ids = await instance.getMyReports();
+
+        const reports = await Promise.all(
+            ids.map(async (id: bigint) => {
+                const r = await instance.getReport(id);
+                return {
+                    id: r[0].toString(),
+                    patient: r[1],
+                    doctor: r[2],
+                    cid: r[3],
+                    meta: r[4],
+                    timestamp: Number(r[5]),
+                };
+            })
+        );
+
+        return reports;
+    };
+
+    const verifyDoctor = async (address: string) => {
+        if (!instance || !userAddress) {
+            toast.error("Contract not ready");
+            return null;
+        }
+
+        try {
+            const tx = await instance.verifyDoctor(address, {
+                gasLimit: 1_000_000
+            });
+            await tx.wait();
+            toast.success("Doctor verified");
+            return tx;
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err?.reason || "Verify doctor failed");
+            return null;
+        }
+    }
+
+    const revokeDoctor = async (address: string) => {
+        if (!instance || !userAddress) {
+            toast.error("Contract not ready");
+            return null;
+        }
+
+        try {
+            const tx = await instance.revokeDoctor(address, {
+                gasLimit: 1_000_000
+            });
+            await tx.wait();
+
+            toast.success("Doctor revoked");
+        } catch (e: any) {
+            console.error(e);
+            toast.error(e?.reason || "Revoke doctor failed");
+            return null;
+        }
+    }
+
+    const getVerifiedDoctors = async () => {
+        if (!instance || !userAddress) return [];
+
+        try {
+            const tx = await instance.getVerifiedDoctors();
+            await tx.wait();
+
+            toast.success("Fetched verified doctors");
+            return tx;
+        } catch (e: any) {
+            toast.error(e?.reason || "Get verified doctors failed");
+            return [];
+        }
+    }
+
     const checkUserRole = async () => {
         if (!instance || !userAddress) return null;
 
@@ -340,6 +439,11 @@ export function useContractHook() {
         registerAsPatient,
         setDoctorProfile,
         getDoctorProfile,
-        checkUserRole
+        checkUserRole,
+        uploadReport,
+        getMyReports,
+        verifyDoctor,
+        revokeDoctor,
+        getVerifiedDoctors
     };
 }

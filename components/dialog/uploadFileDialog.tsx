@@ -13,11 +13,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Upload } from "lucide-react"
 import { usePinataHook } from '@/hooks/usePinataHook';
-import { toast } from "sonner";
+import { useContractHook } from "@/hooks/useContractHook";
 
-export function UploadFileDialog({ setIpfsHash }: { readonly setIpfsHash: React.Dispatch<React.SetStateAction<string>> }) {
+export function UploadFileDialog() {
     const { IpfsUpload } = usePinataHook();
+    const { uploadReport } = useContractHook();
     const [file, setFile] = useState<File | null>(null);
+    const [meta, setMeta] = useState<string>("");
 
     const handleUpload = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -26,8 +28,7 @@ export function UploadFileDialog({ setIpfsHash }: { readonly setIpfsHash: React.
         }
         const res = await IpfsUpload(file);
         if (res?.IpfsHash) {
-            setIpfsHash(res.IpfsHash);
-            toast.success("File uploaded successfully!");
+            await uploadReport(res?.IpfsHash, meta);
         }
     };
 
@@ -52,6 +53,8 @@ export function UploadFileDialog({ setIpfsHash }: { readonly setIpfsHash: React.
                         type="file"
                         onChange={(e) => setFile(e.target.files?.[0] || null)}
                     />
+
+                    <textarea rows={10} cols={5} className="p-3 border border-gray-200 rounded-b-xl" onChange={(e) => setMeta(e.target.value)} />
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
