@@ -12,6 +12,8 @@ import { DoctorProfile as docp } from '@/types/doctor';
 import { MedicalReport } from '@/types/patient';
 
 import { MdOutlineDocumentScanner } from "react-icons/md";
+import { Button } from '@/components/ui/button';
+import { UpdateReport } from '@/components/dialog/updateReport';
 
 export default function DoctorDashboard() {
     const { getDoctorProfile, instance, userAddress, getDoctorReports } = useContractHook();
@@ -129,14 +131,18 @@ export default function DoctorDashboard() {
                                                     </div>
                                                 </div>
 
-                                                <button
-                                                    onClick={() =>
-                                                        window.open(`https://ipfs.io/ipfs/${report.cid}`, "_blank")
-                                                    }
-                                                    className="rounded-lg border border-red-400 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 transition"
-                                                >
-                                                    View Record
-                                                </button>
+                                                <div className="flex justify-center items-center gap-2">
+                                                    <UpdateReport reportId={Number(report.id)} />
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            window.open(`https://ipfs.io/ipfs/${report.cid}`, "_blank")
+                                                        }
+                                                        className="text-red-600 hover:bg-red-100 transition"
+                                                    >
+                                                        View Record
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

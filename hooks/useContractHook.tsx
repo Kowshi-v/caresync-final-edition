@@ -450,6 +450,27 @@ export function useContractHook() {
         }
     };
 
+    //updating report by doctor
+    const updateReport = async (reportId: number, newCid: string, newMeta: string) => {
+        if (!instance || !userAddress) return null;
+
+        try {
+            const res = await instance.doctorUpdateReport(
+                reportId,
+                newCid,
+                newMeta,
+                {
+                    gasLimit: 1_000_000
+                }
+            );
+            await res.wait();
+            toast.success("Report updated successfully !!!")
+            globalThis.window.location.reload();
+        } catch {
+            toast.error("Update report failed");
+            return null;
+        }
+    }
 
     const checkUserRole = async () => {
         if (!instance || !userAddress) return null;
@@ -487,6 +508,7 @@ export function useContractHook() {
         getAllDoctors,
         assignDoctor,
         getDoctorName,
-        getDoctorReports
+        getDoctorReports,
+        updateReport
     };
 }
