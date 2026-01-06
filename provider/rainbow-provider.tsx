@@ -3,8 +3,8 @@
 import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { sonicTestnet } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { sonicTestnet } from "@/hooks/useChain";
 
 const config = getDefaultConfig({
     appName: "Care Sync",
@@ -19,7 +19,7 @@ export function RainbowKitProviderWrapper({ children }: { readonly children: Rea
     return (
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
-                <RainbowKitProvider modalSize="compact">
+                <RainbowKitProvider modalSize="compact" initialChain={sonicTestnet}>
                     {children}
                 </RainbowKitProvider>
             </QueryClientProvider>
