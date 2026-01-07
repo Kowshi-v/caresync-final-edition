@@ -445,7 +445,6 @@ export function useContractHook() {
 
             return reports;
         } catch {
-            toast.error("Get assigned reports failed");
             return [];
         }
     };
@@ -511,4 +510,5 @@ export function useContractHook() {
         getDoctorReports,
         updateReport
     };
+
 }
