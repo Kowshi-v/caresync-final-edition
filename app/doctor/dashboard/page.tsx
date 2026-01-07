@@ -14,6 +14,7 @@ import { MedicalReport } from '@/types/patient';
 import { MdOutlineDocumentScanner } from "react-icons/md";
 import { Button } from '@/components/ui/button';
 import { UpdateReport } from '@/components/dialog/updateReport';
+import { PdfViewIframe } from '@/components/dialog/pdfViewIframe';
 
 export default function DoctorDashboard() {
     const { getDoctorProfile, instance, userAddress, getDoctorReports } = useContractHook();
@@ -133,15 +134,7 @@ export default function DoctorDashboard() {
 
                                                 <div className="flex justify-center items-center gap-2">
                                                     <UpdateReport reportId={Number(report.id)} />
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            window.open(`https://ipfs.io/ipfs/${report.cid}`, "_blank")
-                                                        }
-                                                        className="text-red-600 hover:bg-red-100 transition"
-                                                    >
-                                                        View Record
-                                                    </Button>
+                                                    <PdfViewIframe url={`https://ipfs.io/ipfs/${report.cid}`} />
                                                 </div>
                                             </div>
                                         ))}

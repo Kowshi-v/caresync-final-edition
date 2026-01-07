@@ -155,12 +155,11 @@ export default function CareSync() {
                 Join thousands of patients and healthcare providers who trust Care Sync for secure medical data management.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="bg-red-600 hover:bg-red-700 text-white px-8">
-                  Get Started as Patient
+                <Button className="flex items-center gap-3 bg-red-600 hover:bg-red-700 text-white mt-6" onClick={registerAsPatient}>
+                  <span>Continue as Patient</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" className="border-red-600 text-red-600 hover:bg-red-50 px-8">
-                  Join as Doctor
-                </Button>
+                <SetDoctorDialog />
               </div>
             </CardContent>
           </Card>
